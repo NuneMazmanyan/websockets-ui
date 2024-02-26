@@ -2,7 +2,7 @@ import { httpServer } from "./src/http_server/index";
 import dotenv from 'dotenv';
 import { cwd } from 'process';
 import { resolve } from 'path';
-import { startWsServer } from './src/wss.server';
+import { startWsServer } from './src/wss_server/ws.server';
 
 dotenv.config({ path: resolve(cwd(), '.env') });
 
