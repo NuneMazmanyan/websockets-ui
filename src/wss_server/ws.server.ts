@@ -1,14 +1,15 @@
-import { WebSocketServer } from "ws";
-import { Commands } from '../commands';
-import { handleUser } from './handlers/player.handler';
-import { handleRoom } from './handlers/rooms.handler';
+import {WebSocketServer} from "ws";
+import {Commands} from '../commands';
+import {createUser, handleUser} from './handlers/player.handler';
+import {createRoom, handleRoom, updateRoom} from './handlers/rooms.handler';
 import {BsWebsocket, WebSocketMessage} from '../models/models';
+import {handleUpdateWinners} from "./handlers/winners.handler";
 
 
 export const startWsServer = (): void => {
     const WSS_PORT = process.env.WSS_PORT || 3000;
 
-    const wsServer = new WebSocketServer({ port: Number(WSS_PORT), clientTracking: true }, () => {
+    const wsServer = new WebSocketServer({port: Number(WSS_PORT), clientTracking: true}, () => {
         console.log(`Web Socket server is running on ${WSS_PORT} port`);
     });
 
@@ -17,14 +18,14 @@ export const startWsServer = (): void => {
         ws.on('message', (message: string) => {
             try {
                 const parsedMessage: WebSocketMessage = JSON.parse(message);
-                handleWebSocketMessage(ws, parsedMessage);
+                handleWebSocketMessage(ws, parsedMessage, wsServer);
             } catch (error) {
                 console.error('Error parsing message:', error);
             }
         });
 
         setInterval(() => {
-            ws.send(JSON.stringify({ type: 'ping', data: 'keep-alive' }));
+            ws.send(JSON.stringify({type: 'ping', data: 'keep-alive'}));
         }, 30000);
 
         ws.on('close', () => {
@@ -54,19 +55,26 @@ function sendMessage(ws: WebSocket, message: WebSocketMessage) {
     ws.send(JSON.stringify(message));
 }
 
-function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage) {
+function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsServer: WebSocketServer) {
     console.log('Received message:', message);
     switch (message.type) {
         case Commands.reg: {
-            const payload = message.data;
-            const response = handleUser(payload.name, ws);
-            ws.send(JSON.stringify(response));
-            break;
+            const payload = JSON.parse(message.data);
+            const userReponse = handleUser(payload.name, ws);
+            ws.send(userReponse);
+            wsServer.clients.forEach((client) => {
+                client.send(updateRoom());
+                client.send(handleUpdateWinners([]));
+            });
         }
         case Commands.createRoom: {
-            const response = handleRoom(ws);
-            ws.send(JSON.stringify(response));
-            break
+            createRoom(ws);
+            wsServer.clients.forEach((client) => {
+                client.send(updateRoom());
+            });
+            const winners = handleUpdateWinners([]);
+            ws.send(winners);
+            break;
         }
         default: {
             console.log('Unknown message type:', message.type);

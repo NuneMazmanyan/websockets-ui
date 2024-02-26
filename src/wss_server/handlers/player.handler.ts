@@ -60,7 +60,7 @@ function writeFile(content: string) {
     });
 }
 
-function createUser(userCredentials: User): User {
+export function createUser(userCredentials: User): User {
     let user: User = {
         ...userCredentials,
         index: Date.now(),
