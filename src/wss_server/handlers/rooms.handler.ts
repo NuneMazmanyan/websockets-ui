@@ -26,7 +26,12 @@ function initializeRooms() {
     try {
         if (fs.existsSync(roomsDB)) {
             const fileContent = fs.readFileSync(roomsDB, 'utf-8');
-            rooms = JSON.parse(fileContent).rooms || [];
+            const parsedData = JSON.parse(fileContent);
+            if (parsedData.rooms && Array.isArray(parsedData.rooms)) {
+                rooms = parsedData.rooms;
+            } else {
+                console.log('Invalid data in rooms database file. Initializing with empty array.');
+            }
         } else {
             console.log('Rooms database file does not exist. Initializing with empty array.');
         }

@@ -36,7 +36,12 @@ function initializeUsers() {
     try {
         if (fs.existsSync(usersDB)) {
             const fileContent = fs.readFileSync(usersDB, 'utf-8');
-            users = JSON.parse(fileContent).users || [];
+            const parsedData = JSON.parse(fileContent);
+            if (parsedData.users && Array.isArray(parsedData.users)) {
+                users = parsedData.users;
+            } else {
+                console.log('Invalid data in users database file. Initializing with empty array.');
+            }
         } else {
             console.log('Users database file does not exist. Initializing with empty array.');
         }
@@ -60,8 +65,7 @@ function createUser(userCredentials: User): User {
         ...userCredentials,
         index: Date.now(),
     };
-    users.push(user);
-    writeFile(JSON.stringify({ users: users }));
+    addPlayer(user);
     return user;
 }
 
@@ -86,4 +90,10 @@ async function readUsers(): Promise<User[]> {
 
 function checkUser(name: string): boolean {
     return users.some(user => user.name === name);
+}
+
+function addPlayer(player: User): User {
+    users.push(player);
+    writeFile(JSON.stringify({ users: users }));
+    return player;
 }
