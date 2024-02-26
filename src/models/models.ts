@@ -1,4 +1,4 @@
-import { WebSocket } from 'ws';
+import {WebSocket} from 'ws';
 
 export interface BsWebsocket extends WebSocket {
     index: number;
@@ -16,7 +16,7 @@ export interface User {
     index?: number
 }
 
-export interface UserRequest{
+export interface UserRequest {
     name: string,
     password: string
 }
@@ -26,7 +26,17 @@ export interface UserResponse {
     index: number
 }
 
-export interface Room{
+export interface Room {
     roomId: number;
     roomUsers: User[];
+}
+
+export interface Winner {
+    name: string;
+    wins: number;
+}
+
+export interface Game {
+    gameId: number;
+    playerId: number;
 }
