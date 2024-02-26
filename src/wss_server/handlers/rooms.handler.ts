@@ -12,7 +12,7 @@ export const handleRoom = (ws: BsWebsocket): string => {
     console.log('New room added:', room);
 
     return JSON.stringify({
-        type: Commands.updateRoom,
+        type: Commands.createRoom,
         data: JSON.stringify({
             roomId: room.roomId,
             roomUsers: room.roomUsers,
@@ -20,6 +20,7 @@ export const handleRoom = (ws: BsWebsocket): string => {
         id: 0,
     });
 };
+
 
 initializeRooms();
 
@@ -53,7 +54,7 @@ function writeFile(content: string) {
 
 export function createRoom(ws: BsWebsocket) {
     const room: Room = {
-        roomId: Date.now(),
+        roomId: generateId(),
         roomUsers: [{ index: ws.index, name: ws.name }],
     };
     addRoom(room);
@@ -126,4 +127,12 @@ export const updateRoom = (): string => {
         data: JSON.stringify(rooms),
         id: 0,
     });
+}
+
+function generateId(): number{
+    let id = Math.floor(Math.random()*100000000)
+    if(rooms.some(room => room.roomId === id)){
+        generateId()
+    }
+    return id;
 }

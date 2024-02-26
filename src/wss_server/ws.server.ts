@@ -71,11 +71,7 @@ function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsSe
             ws.send(room);
             break;
         }
-        case Commands.startGame:
-            ;
-        // case Commands.turn: break;
-        // case Commands.attack: break;
-        // case Commands.finish: break;
+        // case Commands.startGame:startGam
         case Commands.updateRoom: {
             const indexRoom = JSON.parse(message.data).indexRoom;
             const userReponse = handleAddUserToRoom(ws, indexRoom);

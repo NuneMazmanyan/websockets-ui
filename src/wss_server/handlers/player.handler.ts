@@ -63,7 +63,7 @@ function writeFile(content: string) {
 export function createUser(userCredentials: User): User {
     let user: User = {
         ...userCredentials,
-        index: Date.now(),
+        index: generateId(),
     };
     addPlayer(user);
     return user;
@@ -96,4 +96,13 @@ function addPlayer(player: User): User {
     users.push(player);
     writeFile(JSON.stringify({ users: users }));
     return player;
+}
+
+
+function generateId(): number{
+    let id = Math.floor(Math.random()*100000000)
+    if(users.some(user => user.index === id)){
+        generateId()
+    }
+    return id;
 }
