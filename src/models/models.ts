@@ -5,6 +5,11 @@ export interface BsWebsocket extends WebSocket {
     name: string;
 }
 
+export interface WebSocketMessage {
+    type: string;
+    data: any;
+}
+
 export interface User {
     name: string,
     password?: string,

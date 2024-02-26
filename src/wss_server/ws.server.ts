@@ -2,7 +2,7 @@ import { WebSocketServer } from "ws";
 import { Commands } from '../commands';
 import { handleUser } from './handlers/player.handler';
 import { handleRoom } from './handlers/rooms.handler';
-import { BsWebsocket } from '../models/models';
+import {BsWebsocket, WebSocketMessage} from '../models/models';
 
 
 export const startWsServer = (): void => {
@@ -15,23 +15,17 @@ export const startWsServer = (): void => {
     wsServer.on('connection', (ws: BsWebsocket, req) => {
 
         ws.on('message', (message: string) => {
-            const request = JSON.parse(message);
-            const command = request.type;
-
-            switch (command) {
-                case Commands.reg: {
-                    const payload = JSON.parse(request.data);
-                    const response = handleUser(payload.name, ws);
-                    ws.send(response);
-                    break;
-                }
-                case Commands.createRoom: {
-                        const response = handleRoom(ws);
-                        ws.send(response);
-                        break
-                }
+            try {
+                const parsedMessage: WebSocketMessage = JSON.parse(message);
+                handleWebSocketMessage(ws, parsedMessage);
+            } catch (error) {
+                console.error('Error parsing message:', error);
             }
         });
+
+        setInterval(() => {
+            ws.send(JSON.stringify({ type: 'ping', data: 'keep-alive' }));
+        }, 30000);
 
         ws.on('close', () => {
             ws.close();
@@ -55,3 +49,27 @@ export const startWsServer = (): void => {
         process.exit(0);
     });
 };
+
+function sendMessage(ws: WebSocket, message: WebSocketMessage) {
+    ws.send(JSON.stringify(message));
+}
+
+function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage) {
+    console.log('Received message:', message);
+    switch (message.type) {
+        case Commands.reg: {
+            const payload = message.data;
+            const response = handleUser(payload.name, ws);
+            ws.send(JSON.stringify(response));
+            break;
+        }
+        case Commands.createRoom: {
+            const response = handleRoom(ws);
+            ws.send(JSON.stringify(response));
+            break
+        }
+        default: {
+            console.log('Unknown message type:', message.type);
+        }
+    }
+}
