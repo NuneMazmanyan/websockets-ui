@@ -26,7 +26,7 @@ export const startWsServer = (): void => {
 
         setInterval(() => {
             ws.send(JSON.stringify({type: 'ping', data: 'keep-alive'}));
-        }, 30000);
+        }, 3000);
 
         ws.on('close', () => {
             ws.close();
@@ -60,45 +60,48 @@ function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsSe
     switch (message.type) {
         case Commands.reg: {
             const payload = JSON.parse(message.data);
-            const userReponse = handleUser(payload.name, ws);
-            ws.send(userReponse);
+            const userResponse = handleUser(payload.name, ws);
+            ws.send(userResponse);
+            // break;
         }
         case Commands.createRoom: {
             const room = handleRoom(ws);
-            wsServer.clients.forEach((client) => {
-                client.send(updateRoom());
-            });
             ws.send(room);
-            break;
+            // break;
         }
-        case Commands.addToRoom:{
+        case Commands.addToRoom: {
             const payload = JSON.parse(message.data);
             const roomId = payload.roomId;
             const game = handleAddUserToRoom(ws, roomId);
-            updateRoom();
-            ws.send(game);
-            break;
+            if (game) {
+                ws.send(game);
+            }
+            // break;
         }
         case Commands.updateRoom: {
-            const indexRoom = JSON.parse(message.data).indexRoom;
-            const userReponse = handleAddUserToRoom(ws, indexRoom);
-
-            wsServer.clients.forEach((client) => {
-                client.send(updateRoom());
-            });
-            const game = handleCreateGame(ws.index, indexRoom);
-            wsServer.clients.forEach((client) => {
-                client.send(userReponse);
-                client.send(game);
-            });
-            break;
+            const payload = JSON.parse(message.data);
+            const indexRoom = payload.indexRoom;
+            const userResponse = handleAddUserToRoom(ws, indexRoom);
+            if (userResponse) {
+                wsServer.clients.forEach((client) => {
+                    client.send(updateRoom());
+                });
+                const game = handleCreateGame(ws.index, indexRoom);
+                wsServer.clients.forEach((client) => {
+                    client.send(userResponse);
+                    client.send(game);
+                });
+            }
+            // break;
         }
         case Commands.createGame: {
             const payload = JSON.parse(message.data);
             const playerId = payload.playerId;
             const roomId = payload.roomId;
             const game = handleCreateGame(playerId, roomId);
-            ws.send(game);
+            if (game) {
+                ws.send(game);
+            }
             break;
         }
         default: {
@@ -106,4 +109,3 @@ function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsSe
         }
     }
 }
-
