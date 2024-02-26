@@ -54,7 +54,7 @@ function writeFile(content: string) {
 export function createRoom(ws: BsWebsocket) {
     const room: Room = {
         roomId: Date.now(),
-        roomUsers: [{index: ws.index, name: ws.name}],
+        roomUsers: [{ index: ws.index, name: ws.name }],
     };
     addRoom(room);
     return room;
@@ -62,7 +62,7 @@ export function createRoom(ws: BsWebsocket) {
 
 function addRoom(room: Room): Room {
     rooms.push(room);
-    writeFile(JSON.stringify({rooms: rooms}));
+    writeFile(JSON.stringify({ rooms: rooms }));
     return room;
 }
 
