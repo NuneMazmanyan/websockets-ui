@@ -8,4 +8,5 @@ export const Commands = {
     createRoom: 'create_room',
     updateRoom: 'update_room',
     updateWinners: 'update_winners',
+    addToRoom: 'add_to_room'
 }

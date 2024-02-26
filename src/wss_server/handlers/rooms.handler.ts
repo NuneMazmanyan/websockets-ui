@@ -73,29 +73,39 @@ function getRooms(): Room[] {
 
 export const handleAddUserToRoom = (ws: BsWebsocket, roomId: number): string => {
     const room = getRoomById(roomId);
-    const userAlreadyInRoom = room?.roomUsers.some((user) => user.index === ws.index);
-    if (userAlreadyInRoom) {
-        console.log('User already in room');
+    if (!room) {
         return JSON.stringify({
             type: 'error',
             data: JSON.stringify({
-                message: 'You cannot add yourself twice in the room!',
+                message: 'Room not found!',
             }),
             id: 0,
         });
     }
-    const roomPayload = addUserToRoom(ws, roomId);
-    console.log(`User ${ws.name} added to room: `, roomId);
+
+    const userAlreadyInRoom = room.roomUsers.some((user) => user.index === ws.index);
+    if (userAlreadyInRoom) {
+        return JSON.stringify({
+            type: 'error',
+            data: JSON.stringify({
+                message: 'You are already in this room!',
+            }),
+            id: 0,
+        });
+    }
+
+    room.roomUsers.push({ index: ws.index, name: ws.name });
 
     return JSON.stringify({
-        type: Commands.updateRoom,
+        type: 'add_user_to_room_success',
         data: JSON.stringify({
-            roomId: roomPayload?.roomId,
-            roomUsers: roomPayload?.roomUsers,
+            roomId: room.roomId,
+            roomUsers: room.roomUsers,
         }),
         id: 0,
     });
 }
+
 
 function addUserToRoom(ws: BsWebsocket, roomId: number) {
     const roomIndex = rooms.findIndex((room) => room.roomId === roomId);

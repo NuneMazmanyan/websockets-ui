@@ -71,7 +71,14 @@ function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsSe
             ws.send(room);
             break;
         }
-        // case Commands.startGame:startGam
+        case Commands.addToRoom:{
+            const payload = JSON.parse(message.data);
+            const roomId = payload.roomId;
+            const game = handleAddUserToRoom(ws, roomId);
+            updateRoom();
+            ws.send(game);
+            break;
+        }
         case Commands.updateRoom: {
             const indexRoom = JSON.parse(message.data).indexRoom;
             const userReponse = handleAddUserToRoom(ws, indexRoom);
@@ -86,7 +93,6 @@ function handleWebSocketMessage(ws: BsWebsocket, message: WebSocketMessage, wsSe
             });
             break;
         }
-        // case Commands.updateWinners: break;
         case Commands.createGame: {
             const payload = JSON.parse(message.data);
             const playerId = payload.playerId;
